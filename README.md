@@ -29,5 +29,4 @@ Pairwise plots:
 
 ![Q5SJE4 / P37690](https://github.com/alibekk93/IDP_analysis/blob/main/datafiles/figures/Q5SJE4%20-%20P37690.png)
 
-*More plots available here:*
-![link to plots](https://github.com/alibekk93/IDP_analysis/tree/main/datafiles/figures)
+*More plots available [here](https://github.com/alibekk93/IDP_analysis/tree/main/datafiles/figures)*
