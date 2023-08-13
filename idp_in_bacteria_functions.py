@@ -1,0 +1,425 @@
+# functions for the IDP in bacteria project
+
+
+### Read fasta ###
+
+def read_fasta(fasta_file: str) -> pd.DataFrame:
+  """Processes raw .fasta files
+
+  Opens a .fasta file, parses the sequences and their IDs into a
+  dataframe and returns the dataframe.
+
+  Parameters
+  ----------
+  fasta_file : str
+    the raw .fasta file directory.
+
+  Returns
+  -------
+  pd.DataFrame
+    a dataframe with ID, Sequence and Length columns.
+
+  """
+
+  # open the file
+  handle = open(fasta_file, 'r')
+  seq_list = list(SeqIO.parse(handle, 'fasta'))
+  handle.close()
+
+  # parse data into lists
+  ids = [seq_record.id.split('|')[1] for seq_record in seq_list]
+  seqs = [str(seq_record.seq) for seq_record in seq_list]
+  lens = [len(seq) for seq in seqs]
+
+  # save data into a dataframe
+  df = pd.DataFrame({'ID':ids, 'Sequence':seqs, 'Length':lens})
+
+  return df
+
+
+### Read pickle file ###
+
+def read_pickle_file(file_name: str):
+  """A simple function to read pickle files
+
+  Parameters
+  ----------
+  file_name : srt
+    location of the pickle file
+
+  Returns
+  -------
+  any format, but best with pd.DataFrames or lists
+
+  """
+
+  print(file_name + ' loading...')
+  with open(file_name, 'rb') as f:
+    result = pickle.load(f)
+  print(file_name + ' loaded!')
+  return result
+
+
+### Binary disorder ###
+
+def binary_disorder(disorder_list: list, threshold: float=0.5) -> list:
+  """Returns a list of binary values for disordered
+  residues given a threshold
+
+  Parameters
+  ----------
+  disorder_list : list
+    a list of disorder values
+  threshold : float
+    a binary threshold, 0.5 by default. Disorder score
+    above the threshold means that the residue is
+    considered to be disordered
+
+  Returns
+  -------
+  list
+    a list of binary values indicating whether the
+    residue is disordered (1) or not (0)
+
+  """
+
+  return [1 if dis > threshold else 0 for dis in disorder_list]
+
+
+### Find longest binary IDR ###
+
+def find_longest_binary_IDR(binary_disorder_list: list) -> int:
+  """Finds the longest stretch of binary IDR for a
+  given protein
+
+  Parameters
+  ----------
+  binary_disorder_list : list
+    a list of binary values indicating whether the
+    residue is disordered (1) or not (0)
+
+  Returns
+  -------
+  int
+    a number of disordered residues in the longest
+    IDR
+
+  """
+
+  # set max IDR length as zero
+  max_IDR_len = 0
+
+  # set current IDR length as zero
+  current_IDR_len = 0
+  # iterate though each residue
+  for disorder in binary_disorder_list:
+    if disorder == 1:
+      # increase current IDR length if disordered
+      current_IDR_len += 1
+    else:
+      # not part of IDR, save current length if max or continue
+      if current_IDR_len > max_IDR_len:
+        max_IDR_len = current_IDR_len
+      current_IDR_len = 0
+
+  return max_IDR_len
+
+
+### Find longest binary IDR ###
+
+def find_longest_binary_IDR(binary_disorder_list: list) -> int:
+  """Finds the longest stretch of binary IDR for a
+  given protein
+
+  Parameters
+  ----------
+  binary_disorder_list : list
+    a list of binary values indicating whether the
+    residue is disordered (1) or not (0)
+
+  Returns
+  -------
+  int
+    a number of disordered residues in the longest
+    IDR
+
+  """
+
+  # set max IDR length as zero
+  max_IDR_len = 0
+
+  # set current IDR length as zero
+  current_IDR_len = 0
+  # iterate though each residue
+  for disorder in binary_disorder_list:
+    if disorder == 1:
+      # increase current IDR length if disordered
+      current_IDR_len += 1
+    else:
+      # not part of IDR, save current length if max or continue
+      if current_IDR_len > max_IDR_len:
+        max_IDR_len = current_IDR_len
+      current_IDR_len = 0
+
+  return max_IDR_len
+
+
+### Fix -infinitives ###
+
+def fix_neg_inf(df: pd.DataFrame, replacement=np.nan) -> pd.DataFrame:
+  """Replaces -inf values in a given dataframe
+
+  Parameters
+  ----------
+  df : pd.DataFrame
+    The dataframe with -inf to be replaced
+  replacement
+    The value to replace -inf with. Default
+    is np.nan
+
+  Returns:
+  --------
+  pd.DataFrame
+
+  """
+
+  df_new = df.copy()
+  df_new[df.astype(float) < 0] = replacement
+  return df_new
+
+
+### Align sequences ###
+
+def align_seqs(seqs: list, ids: list, gap_ins_pen: float=-1.0,
+               gap_ext_pen: float=-0.5):
+  """Multiple sequence alignment using ClustalW
+
+  Parameters
+  ----------
+  seqs : list
+    A list of sequences to be aligned (as str)
+  ids : list
+    A list of sequence IDs (as str)
+  gap_ins_pen : float
+    Gap insertion penalty for the alignment.
+    -1.0 by default
+  gap_ext_pen : float
+    Gap extension penalty for the alignment.
+    -0.5 by default
+
+  Returns
+  -------
+  Alignment object
+
+  """
+
+  # create seq records
+  records = [SeqRecord(Seq(seq), id) for seq, id in zip(seqs, ids)]
+  # save records as fasta
+  with open('unaligned.fas', 'w') as handle:
+    SeqIO.write(records, handle, 'fasta')
+  # align using ClustalW
+  cline = ClustalwCommandline(infile='unaligned.fas', outfile='aligned.fas',
+                            gapext=gap_ext_pen, gapopen=gap_ins_pen,
+                            type='PROTEIN', outorder='INPUT',
+                            output='FASTA')
+  cline()
+  # read the output file
+  align = AlignIO.read('aligned.fas', 'fasta')
+  return align
+
+
+### Align disorder ###
+
+def align_disorder(disorder_values: list, seqs: list, ids: list,
+                  gap_ins_pen: float=-1.0, gap_ext_pen: float=-0.5) -> tuple:
+  """Aligns disorder values based on AA sequences
+
+  Parameters:
+  -----------
+  disorder_values : list
+    A list of disorder values to be plotted
+  seqs : list
+    A list of sequences to be aligned
+  ids : list
+    A list of sequence IDs (as str)
+  gap_ins_pen : float
+    Gap insertion penalty for the alignment.
+    -1.0 by default
+  gap_ext_pen : float
+    Gap extension penalty for the alignment.
+    -0.5 by default
+
+  Returns:
+  --------
+  (sequence_alignment, disorder_alignment)
+
+  """
+
+  aligned_disorders = []
+  # align sequences
+  alignment = align_seqs(seqs, ids, gap_ins_pen=gap_ins_pen, gap_ext_pen=gap_ext_pen)
+  # insert gaps in disorder values
+  for a, d in zip(alignment, disorder_values):
+    seq_disorder_full = [*d.copy()]
+    for i, residue in enumerate(a.seq):
+      if residue == '-':
+        seq_disorder_full.insert(i, np.nan)
+    seq_disorder_full = pd.Series(seq_disorder_full).interpolate().tolist()
+    aligned_disorders.append(seq_disorder_full)
+  return (alignment, aligned_disorders)
+
+
+### Get charge / hydrophobicity ###
+
+def get_charge_hydrophobicity(seq: str) -> tuple:
+  """Calculates mean absolute charge and hydrophobicity
+
+  Parameters
+  ----------
+  seq : str
+    AA sequence to calculate values for
+
+  Returns:
+  --------
+  tuple
+    tuple with two float values:
+    1) mean absolute charge
+    2) mean hydrophobicity (scaled 0-1)
+
+  """
+
+  # calculate mean absolute charge
+  prot_analysis = ProteinAnalysis(seq)
+  mean_abs_charge = abs(prot_analysis.charge_at_pH(7)) / prot_analysis.length
+
+  # get Kyle-Doolitle scale
+  KyteDoolitle = gravy_scales.get('KyteDoolitle', -1)
+  KyteDoolitle['X'] = 0
+  KyteDoolitle['U'] = 0
+  # normalize scale to 0-1 range
+  scaler = MinMaxScaler()
+  KD_norm = {k:v[0] for k, v in zip(KyteDoolitle.keys(), scaler.fit_transform(np.array([*KyteDoolitle.values()]).reshape(-1, 1)))}
+  # calculate mean hydrophobicity
+  hydrophobicity_sum = sum(KD_norm[aa] for aa in seq)
+  mean_hydrophobicity = hydrophobicity_sum / prot_analysis.length
+
+  return mean_abs_charge, mean_hydrophobicity
+
+
+### Drop unavailable rows ###
+
+def drop_unavailable(proteome: pd.DataFrame, reset_index: bool=True) -> pd.DataFrame:
+  """Drop rows if not all models are available
+
+  """
+
+  mask = [proteome.disorder.iloc[n].shape[1]==4 for n in range(len(proteome))]
+  proteome = proteome[mask]
+  if reset_index == True:
+    proteome.reset_index(inplace=True, drop=True)
+  return proteome
+
+
+### Get additional columns with IDP data ###
+
+def get_additional_columns(proteome:pd.DataFrame) -> None:
+  """Add Additional Columns to Proteome DataFrame
+  This function calculates additional columns for the proteome DataFrame including:
+
+  disorder_combined: mean of all disorder models
+  disorder_binary: binary disorder values based on a threshold of 0.5
+  disorder_mean: mean disorder score for each protein
+  disorder_binary_mean: mean binary disorder value (fraction of disorder) for each protein
+  longest_IDR: length of the longest binary intrinsically disordered region for each protein
+  -----------
+  Parameters:
+  proteome (pd.DataFrame): The dataframe containing protein information.
+
+  Returns:
+  None
+  """
+
+  # get means of all models
+  proteome['disorder_combined'] = [np.mean(proteome.disorder.iloc[i], axis=1) for i in range(len(proteome))]
+  # get binary disorder values
+  proteome['disorder_binary'] = proteome.disorder_combined.apply(binary_disorder, threshold=0.5)
+  # get mean disorder values for each protein (mean disorder score)
+  proteome['disorder_mean'] = proteome.disorder_combined.apply(np.mean)
+  # get mean binary disorder values for each protein (fraction of disorder)
+  proteome['disorder_binary_mean'] = proteome.disorder_binary.apply(np.mean)
+  # find longest binary IDR for each protein
+  proteome['longest_IDR'] = proteome.disorder_binary.apply(find_longest_binary_IDR)
+  return
+
+
+### Get and process pairwise OMA file ###
+
+def get_OMA(species_tag:str, common_species_tag:str='THET8', oma_type:str='any') -> pd.DataFrame:
+  """Obtains pairwise OMA and returns a dataframe
+
+  -----------
+  Parameters:
+  species_tag (str): Tag for species to use in OMA.
+  common_species_tag (str): Tag for the second species to use in OMA. This should be the same
+  for all OMA files. 'THET8' by default.
+  oma_type (str): Type of OMA relationships to keep. 'any' by default. Other possibilities are
+  '1:1', 'n:1', 'm:1' and 'n:m'
+
+  Returns:
+  pd.DataFrame
+  """
+
+  # get file
+  path = f'https://omabrowser.org/cgi-bin/gateway.pl?f=PairwiseOrthologs&p1={common_species_tag}&p2={species_tag}&p3=UniProt'
+  try_retrieve_url(path, '_')
+  OMA = pd.read_csv('_', sep='\t')
+  if len(OMA) == 0:
+    path = f'https://omabrowser.org/cgi-bin/gateway.pl?f=PairwiseOrthologs&p1={species_tag}&p2={common_species_tag}&p3=UniProt'
+    try_retrieve_url(path, '_')
+    OMA = pd.read_csv('_', sep='\t')
+  # process file
+  OMA.columns = [common_species_tag, species_tag, 'oma_type', 'OMA_group']
+  if oma_type != 'any':
+    OMA = OMA[OMA['oma_type'] == oma_type]
+  OMA.drop(['OMA_group', 'oma_type'], axis='columns', inplace=True)
+  OMA[common_species_tag] = OMA[common_species_tag].str.replace(common_species_tag, '')
+  OMA[common_species_tag] = OMA[common_species_tag].str.replace('_', '')
+  # OMA = OMA[OMA[common_species_tag].str.len()==6]
+  OMA[species_tag] = OMA[species_tag].str.replace(species_tag, '')
+  OMA[species_tag] = OMA[species_tag].str.replace('_', '')
+  OMA.reset_index(inplace=True, drop=True)
+  return OMA
+
+
+### Read fIDPnn disorder files ###
+
+def read_fIDPnn_disorder(path, insert_into_df=False):
+  dfs = {}
+  lists = {}
+  dflines = []
+
+  with open(path, 'rb') as f:
+    for i, line in enumerate(tqdm(f.readlines())):
+      if line.decode('utf-8')[:8] == 'Sequence':
+        continue
+      elif line.decode('utf-8')[0] == '>':
+        if dflines != []:
+          columns = dflines[0].lower().replace(' ', '_').strip().split(',')
+          df = pd.DataFrame([l.strip().split(',') for l in dflines[1:]], columns=columns)
+          df.iloc[:, 2:] = df.iloc[:, 2:].astype('float')
+          df[df.columns[0]] = df.iloc[:, 0].astype('float')
+          dfs[name] = df
+          lists[name] = df.predicted_score_for_disorder.tolist()
+        name = line.decode('utf-8').split('|')[1]
+        dflines = []
+      else:
+        dflines.append(line.decode('utf-8'))
+  if insert_into_df:
+    m = proteomes_df.disorder_fIDPnn.isna()
+    proteomes_df.loc[m, 'disorder_fIDPnn'] = proteomes_df.ID.map(lists)
+    return
+  else:
+    return dfs
+
+
