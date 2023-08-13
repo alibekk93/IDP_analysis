@@ -398,7 +398,20 @@ def get_OMA(species_tag:str, common_species_tag:str='THET8', oma_type:str='any')
 
 ### Read fIDPnn disorder files ###
 
-def read_fIDPnn_disorder(path, insert_into_df=False):
+def read_fIDPnn_disorder(path, insert_into_df=False, original_df=None):
+  """Processes sequence data from a file and returns DataFrames or updates an existing DataFrame
+
+    ----------
+    Parameters:
+    path (str) : The path to the input file containing sequence data.
+    insert_into_df (bool, optional) : Whether to insert processed data into an existing DataFrame. Default is False.
+    original_df (pd.DataFrame, optionsl) : Original DataFrame to insert into if insert_into_df=True. Default is None.
+
+    Returns:
+    None if insert_into_df is True, otherwise a dictionary of DataFrames.
+    
+  """
+  
   dfs = {}
   lists = {}
   dflines = []
@@ -420,8 +433,8 @@ def read_fIDPnn_disorder(path, insert_into_df=False):
       else:
         dflines.append(line.decode('utf-8'))
   if insert_into_df:
-    m = proteomes_df.disorder_fIDPnn.isna()
-    proteomes_df.loc[m, 'disorder_fIDPnn'] = proteomes_df.ID.map(lists)
+    m = original_df.disorder_fIDPnn.isna()
+    original_df.loc[m, 'disorder_fIDPnn'] = original_df.ID.map(lists)
     return
   else:
     return dfs
