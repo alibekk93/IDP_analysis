@@ -1,7 +1,6 @@
-# packages installation and import
+# packages import
 
 # Biopython
-!pip install BIO
 from Bio import SeqIO, AlignIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -19,7 +18,6 @@ import pickle
 from io import StringIO
 
 # statistics
-!pip install --upgrade scipy
 from scipy.stats import mannwhitneyu, chisquare, pearsonr, ttest_ind, ttest_rel, wilcoxon, ks_2samp, sem, f_oneway
 import scipy
 from sklearn.preprocessing import MinMaxScaler
