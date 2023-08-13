@@ -34,12 +34,7 @@ tqdm.pandas()
 from functools import reduce
 from itertools import combinations
 
-# install ClustalW
-!sudo apt-get update
-!sudo apt-get install clustalw
-
 # toytree
-!pip install toytree toyplot
 import toytree
 import toyplot.svg
 import toyplot
