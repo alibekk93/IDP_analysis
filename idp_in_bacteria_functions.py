@@ -1,5 +1,9 @@
 # functions for the IDP in bacteria project
 
+### dependencies ###
+
+from IDP_analysis.packages_import import *
+
 
 ### Read fasta ###
 
