@@ -129,45 +129,6 @@ def find_longest_binary_IDR(binary_disorder_list: list) -> int:
   return max_IDR_len
 
 
-### Find longest binary IDR ###
-
-def find_longest_binary_IDR(binary_disorder_list: list) -> int:
-  """Finds the longest stretch of binary IDR for a
-  given protein
-
-  Parameters
-  ----------
-  binary_disorder_list : list
-    a list of binary values indicating whether the
-    residue is disordered (1) or not (0)
-
-  Returns
-  -------
-  int
-    a number of disordered residues in the longest
-    IDR
-
-  """
-
-  # set max IDR length as zero
-  max_IDR_len = 0
-
-  # set current IDR length as zero
-  current_IDR_len = 0
-  # iterate though each residue
-  for disorder in binary_disorder_list:
-    if disorder == 1:
-      # increase current IDR length if disordered
-      current_IDR_len += 1
-    else:
-      # not part of IDR, save current length if max or continue
-      if current_IDR_len > max_IDR_len:
-        max_IDR_len = current_IDR_len
-      current_IDR_len = 0
-
-  return max_IDR_len
-
-
 ### Fix -infinitives ###
 
 def fix_neg_inf(df: pd.DataFrame, replacement=np.nan) -> pd.DataFrame:
