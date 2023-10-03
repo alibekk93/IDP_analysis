@@ -403,7 +403,7 @@ def read_fIDPnn_disorder(path, insert_into_df=False, original_df=None):
 
 ### Plot aligned cluster ###
 
-def plot_aligned_cluster(df:pd.DataFrame, cluster:str, mav:int=50, errorbar=('ci', 95)) -> None:
+def plot_aligned_cluster(df:pd.DataFrame, cluster:str, mav:int=50, errorbar=('ci', 95), scatter:bool=False) -> None:
   """Create a plot of disorder scores for a given cluster using aligned disorder values.
   
   The function generates a plot showing the predicted disorder scores along the sequence positions for the given cluster.
@@ -417,6 +417,7 @@ def plot_aligned_cluster(df:pd.DataFrame, cluster:str, mav:int=50, errorbar=('ci
     cluster (str) : The identifier of the cluster for which the disorder scores are to be plotted.
     mav (int, optional) : The moving average window size used to smooth the disorder scores. The default value is 50.
     errorbar (tuple or str, optional) : Type of error bar to be used, inherited from sns.lineplot(). Default is ('ci', 95).
+    scatter (bool, optional) : Whether to include a scatterplot for each species. Default is False.
 
     Returns:
     None
@@ -449,7 +450,9 @@ def plot_aligned_cluster(df:pd.DataFrame, cluster:str, mav:int=50, errorbar=('ci
     group_data['position'] = group_data.index + 1
     group_data = group_data.melt(id_vars=['position'], value_name='disorder', var_name='species_tag')
     sns.lineplot(data=group_data, x='position', y='disorder', errorbar=errorbar, c=color, label=group)
-    plt.scatter(x=group_data.position, y=group_data.disorder, marker='.', color=color, alpha=0.1)
+    # scatter for individual species if needed
+    if scatter:
+      plt.scatter(x=group_data.position, y=group_data.disorder, marker='.', color=color, alpha=0.1)
 
   # add 0.5 threshold line and legend
   ax.axhline(0.5, ls='--', c='black')
