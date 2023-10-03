@@ -403,8 +403,8 @@ def read_fIDPnn_disorder(path, insert_into_df=False, original_df=None):
 
 ### Plot aligned cluster ###
 
-def plot_aligned_cluster(cluster:str, mav:int=50) -> None:
-  """Create a plot of disorder scores for a given cluster using AA to align.
+def plot_aligned_cluster(df:pd.DataFrame, cluster:str, mav:int=50, errorbar=('ci', 95)) -> None:
+  """Create a plot of disorder scores for a given cluster using aligned disorder values.
   
   The function generates a plot showing the predicted disorder scores along the sequence positions for the given cluster.
   Each line in the plot represents a species within the cluster, and the plot also includes error bars to indicate the
@@ -413,8 +413,10 @@ def plot_aligned_cluster(cluster:str, mav:int=50) -> None:
 
     ----------
     Parameters:
+    df (pd.DataFrame) : Dataframe that contains aligned disorder data
     cluster (str) : The identifier of the cluster for which the disorder scores are to be plotted.
-    max (int, optional) : The moving average window size used to smooth the disorder scores. The default value is 50.
+    mav (int, optional) : The moving average window size used to smooth the disorder scores. The default value is 50.
+    errorbar (tuple or str, optional) : Type of error bar to be used, inherited from sns.lineplot(). Default is ('ci', 95).
 
     Returns:
     None
@@ -422,7 +424,7 @@ def plot_aligned_cluster(cluster:str, mav:int=50) -> None:
   """
 
   # extract disorder data on the specified cluster
-  data = proteomes_df[proteomes_df['cluster']==cluster]
+  data = df[df['cluster']==cluster]
   aligned_disorders = data['disorder_aligned']
   # calculate the adjusted mav based on data length
   mav = int(np.round(mav * len(aligned_disorders.iloc[0]) / 500)) + 1
@@ -439,14 +441,14 @@ def plot_aligned_cluster(cluster:str, mav:int=50) -> None:
   ys = pd.Series([y[int(mav/2):len(y)-int(mav/2)+1] for y in ys], index=data.index)
   data['ys'] = ys
 
-  # iterate through each group and plot a line for each species
+  # iterate through each group and plot a line with error
   for group in set(data.group):
     group_data = data[data['group']==group]
     color = group_data['color'].iloc[0]
     group_data = pd.DataFrame({group_data['species_tag'].iloc[i]:group_data['ys'].iloc[i] for i in range(len(group_data))})
     group_data['position'] = group_data.index + 1
     group_data = group_data.melt(id_vars=['position'], value_name='disorder', var_name='species_tag')
-    sns.lineplot(data=group_data, x='position', y='disorder', errorbar='sd', c=color, label=group)
+    sns.lineplot(data=group_data, x='position', y='disorder', errorbar=errorbar, c=color, label=group)
     plt.scatter(x=group_data.position, y=group_data.disorder, marker='.', color=color, alpha=0.1)
 
   # add 0.5 threshold line and legend
