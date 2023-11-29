@@ -1,7 +1,7 @@
 # packages import
 
 # Biopython
-from Bio import SeqIO, AlignIO
+from Bio import SeqIO, AlignIO, Entrez, Phylo
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Align import MultipleSeqAlignment
@@ -11,6 +11,7 @@ from Bio.pairwise2 import format_alignment
 # from Bio.SubsMat.MatrixInfo import blosum62
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from Bio.SeqUtils.ProtParamData import gravy_scales
+from Bio.Phylo.TreeConstruction import DistanceCalculator, DistanceTreeConstructor
 
 # files uploading / downloading
 from google.colab import files
@@ -21,6 +22,7 @@ from io import StringIO
 from scipy.stats import mannwhitneyu, chisquare, pearsonr, ttest_ind, ttest_rel, wilcoxon, ks_2samp, sem, f_oneway
 import scipy
 from sklearn.preprocessing import MinMaxScaler
+from statsmodels.api import OLS
 
 # other packages
 import os
@@ -33,6 +35,11 @@ from tqdm.contrib import tzip
 tqdm.pandas()
 from functools import reduce
 from itertools import combinations
+
+
+
+
+### OLD PACKAGES - no longer used
 
 # toytree
 import toytree
