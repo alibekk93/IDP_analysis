@@ -23,7 +23,6 @@ from scipy.stats import mannwhitneyu, chisquare, pearsonr, ttest_ind, ttest_rel,
 import scipy
 from sklearn.preprocessing import MinMaxScaler
 import statsmodels.api as sm
-from statsmodels.api import OLS
 
 # other packages
 import os
