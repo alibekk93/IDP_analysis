@@ -22,6 +22,7 @@ from io import StringIO
 from scipy.stats import mannwhitneyu, chisquare, pearsonr, ttest_ind, ttest_rel, wilcoxon, ks_2samp, sem, f_oneway
 import scipy
 from sklearn.preprocessing import MinMaxScaler
+import statsmodels.api as sm
 from statsmodels.api import OLS
 
 # other packages
@@ -41,7 +42,7 @@ from itertools import combinations
 
 ### OLD PACKAGES - no longer used
 
-# toytree
-import toytree
-import toyplot.svg
-import toyplot
+# # toytree
+# import toytree
+# import toyplot.svg
+# import toyplot
