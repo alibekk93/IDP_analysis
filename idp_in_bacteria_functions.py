@@ -77,8 +77,9 @@ def find_longest_binary_IDR(binary_disorder_list: list) -> int:
         max_IDR_len = current_IDR_len
       current_IDR_len = 0
   # check last time
+  print(current_IDR_len, max_IDR_len)
   if current_IDR_len > max_IDR_len:
-        max_IDR_len = current_IDR_len
+    max_IDR_len = current_IDR_len
 
   return max_IDR_len
 
