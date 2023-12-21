@@ -1,5 +1,4 @@
-# IDP_analysis
-Mesophiles vs. Thermophiles: Untangling the Hot Mess of In-trinsically Disordered Proteins and Growth Temperature of Bacteria
+# Mesophiles vs. Thermophiles: Untangling the Hot Mess of In-trinsically Disordered Proteins and Growth Temperature of Bacteria
 
 **Abstract**
 
