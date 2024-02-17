@@ -12,8 +12,3 @@ This study provides a foundation for future research into the intricate relation
 **Keywords**
 
 intrinsically disordered proteins; protein structure; thermophilic bacteria
-
-```SQL
-SELECT  *
-FROM   table
-```
